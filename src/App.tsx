@@ -35,7 +35,11 @@ import {
   Languages,
   Star,
   ShieldCheck,
-  Share2
+  Share2,
+  Table,
+  Info,
+  Calendar,
+  ChevronDown
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
@@ -175,6 +179,8 @@ export default function App() {
               selectedCurrency={selectedCurrency} 
               onLoanClick={(title) => {
                 if (title === "Mortgages") setActiveTab("MortgageResult");
+                if (title === "Personal Loan") setActiveTab("PersonalLoanForm");
+                if (title === "Business Loan") setActiveTab("BusinessLoanForm");
               }}
             />
           </motion.div>
@@ -225,6 +231,70 @@ export default function App() {
             />
           </motion.div>
         )}
+        {activeTab === "PersonalLoanResult" && (
+          <motion.div
+            key="personal-loan-result"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10"
+          >
+            <PersonalLoanResultPage 
+              currency={selectedCurrency} 
+              onBack={() => setActiveTab("PersonalLoanForm")} 
+            />
+          </motion.div>
+        )}
+        {activeTab === "PersonalLoanForm" && (
+          <motion.div
+            key="personal-loan-form"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10"
+          >
+            <PersonalLoanFormPage 
+              currency={selectedCurrency} 
+              onCalculate={() => setActiveTab("PersonalLoanResult")}
+              onBack={() => setActiveTab("Home")}
+              onCurrencyClick={() => setActiveTab("Currency")}
+            />
+          </motion.div>
+        )}
+        {activeTab === "BusinessLoanForm" && (
+          <motion.div
+            key="business-loan-form"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10"
+          >
+            <BusinessLoanFormPage 
+              currency={selectedCurrency} 
+              onCalculate={() => setActiveTab("BusinessLoanResult")}
+              onBack={() => setActiveTab("Home")}
+              onCurrencyClick={() => setActiveTab("Currency")}
+            />
+          </motion.div>
+        )}
+        {activeTab === "BusinessLoanResult" && (
+          <motion.div
+            key="business-loan-result"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10"
+          >
+            <BusinessLoanResultPage 
+              currency={selectedCurrency} 
+              onBack={() => setActiveTab("BusinessLoanForm")} 
+            />
+          </motion.div>
+        )}
         {activeTab === "Setting" && (
           <motion.div
             key="setting"
@@ -253,36 +323,44 @@ export default function App() {
 }
 
 function FloatingElements() {
-  const elements = Array.from({ length: 12 });
+  const bokehDots = Array.from({ length: 35 });
   return (
     <>
-      {elements.map((_, i) => (
+      <div className="absolute inset-0 bg-[#050505]" />
+      <div className="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/5 via-transparent to-transparent" />
+      {bokehDots.map((_, i) => (
         <motion.div
           key={i}
           initial={{ 
-            x: Math.random() * 100 + "%", 
-            y: "110%", 
-            rotate: 0,
-            opacity: 0.1 + Math.random() * 0.3
+            opacity: 0.2 + Math.random() * 0.4,
+            scale: 0.8 + Math.random() * 2
           }}
           animate={{ 
-            y: "-10%", 
-            rotate: 360,
+            opacity: [0.2, 0.6, 0.2],
+            scale: [1, 1.1, 1],
+            x: [0, Math.random() * 40 - 20, 0],
+            y: [0, Math.random() * 40 - 20, 0],
           }}
           transition={{ 
-            duration: 15 + Math.random() * 20, 
+            duration: 8 + Math.random() * 12, 
             repeat: Infinity, 
-            ease: "linear",
-            delay: Math.random() * 20
+            ease: "easeInOut"
           }}
-          className="absolute text-[#D4AF37]/20"
-          style={{ fontSize: 20 + Math.random() * 40 }}
-        >
-          {i % 3 === 0 ? "$" : i % 3 === 1 ? "¥" : "€"}
-        </motion.div>
+          className="absolute rounded-full mix-blend-screen"
+          style={{
+            width: 60 + Math.random() * 120,
+            height: 60 + Math.random() * 120,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            filter: `blur(${20 + Math.random() * 40}px)`,
+            background: i % 2 === 0 
+              ? `radial-gradient(circle, #D4AF37 0%, rgba(212, 175, 55, 0) 70%)`
+              : `radial-gradient(circle, #FFD700 0%, rgba(255, 215, 0, 0) 70%)`,
+          }}
+        />
       ))}
-      <div className="absolute top-[20%] left-[-10%] w-[60%] h-[60%] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#D4AF37]/3 rounded-full blur-[120px]" />
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-transparent to-[#0A0A0A]" />
+      <div className="absolute top-[5%] left-[-10%] w-[100%] h-[50%] bg-[#D4AF37]/15 rounded-full blur-[150px]" />
     </>
   );
 }
@@ -290,19 +368,31 @@ function FloatingElements() {
 function HomePage({ onCurrencyClick, selectedCurrency, onLoanClick }: { onCurrencyClick: () => void, selectedCurrency: string, onLoanClick: (title: string) => void }) {
   return (
     <>
-      <header className="px-6 py-10 flex justify-between items-center relative">
-        <div className="w-10" />
-        <h1 className="text-3xl font-black tracking-tighter relative z-10 bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent">
-          Loan Calculator
-        </h1>
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={onCurrencyClick}
-          className="bg-[#1A1A1A] border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold text-[#D4AF37] shadow-lg"
+      <header className="px-6 pt-16 pb-10 flex flex-col items-center text-center relative">
+        <div className="absolute top-8 right-6">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onCurrencyClick}
+            className="bg-[#1A1A1A]/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold text-[#D4AF37] shadow-lg"
+          >
+            <span>{selectedCurrency}</span>
+            <ChevronRight className="w-3 h-3" />
+          </motion.button>
+        </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="space-y-2"
         >
-          <span>{selectedCurrency}</span>
-          <ChevronRight className="w-3 h-3" />
-        </motion.button>
+          <h1 className="text-4xl font-bold tracking-tight text-white drop-shadow-2xl">
+            Loan Calculator
+          </h1>
+          <p className="text-[#D4AF37] text-sm font-medium tracking-wide opacity-90">
+            Smart Calculation · Easy Finance
+          </p>
+        </motion.div>
       </header>
 
       <main className="px-4 space-y-8 max-w-lg mx-auto">
@@ -328,6 +418,338 @@ function HomePage({ onCurrencyClick, selectedCurrency, onLoanClick }: { onCurren
             <InvestmentItem icon={PiggyBank} title="RD" subtitle="Recurring Deposit" color="#F5A623" />
           </div>
         </div>
+      </main>
+    </>
+  );
+}
+
+function PersonalLoanFormPage({ currency, onCalculate, onBack, onCurrencyClick }: { currency: string, onCalculate: () => void, onBack: () => void, onCurrencyClick: () => void }) {
+  const [amount, setAmount] = useState("");
+  const [rate, setRate] = useState("");
+  const [term, setTerm] = useState("");
+  const [errors, setErrors] = useState<{ amount?: string; rate?: string; term?: string }>({});
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+
+  const tooltips = {
+    amount: "Please enter the total amount of the loan you wish to borrow.",
+    rate: "Enter the annual interest rate for this loan. This is the cost of borrowing the principal.",
+    term: "Please enter the loan duration (loan term). A loan's term can refer to the length of time that you have to repay. Please choose months or years."
+  };
+
+  const validate = () => {
+    const newErrors: { amount?: string; rate?: string; term?: string } = {};
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      newErrors.amount = "Invalid value";
+    }
+    if (!rate || isNaN(Number(rate)) || Number(rate) <= 0) {
+      newErrors.rate = "Invalid value";
+    }
+    if (!term || isNaN(Number(term)) || Number(term) <= 0) {
+      newErrors.term = "Invalid value";
+    } else if (Number(term) > 360) {
+      newErrors.term = "The loan term cannot exceed 360 months.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCalculate = () => {
+    if (validate()) {
+      onCalculate();
+    }
+  };
+
+  const handleReset = () => {
+    setAmount("");
+    setRate("");
+    setTerm("");
+    setErrors({});
+  };
+
+  const ErrorMessage = ({ message }: { message: string }) => (
+    <motion.div
+      initial={{ x: -10, opacity: 0 }}
+      animate={{ x: [0, -10, 10, -10, 10, 0], opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex items-center gap-1.5 mt-1.5"
+    >
+      <div className="w-1 h-1 rounded-full bg-red-500" />
+      <p className="text-red-500 text-[10px] font-bold tracking-wider uppercase">{message}</p>
+    </motion.div>
+  );
+
+  const Tooltip = ({ text, isVisible, onClose }: { text: string, isVisible: boolean, onClose: () => void }) => (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+          onClick={onClose}
+          className="bg-[#134E4A] text-white text-xs p-4 rounded-2xl shadow-2xl relative z-30 leading-relaxed border border-white/10"
+        >
+          {text}
+          <div className="absolute -top-2 left-6 w-4 h-4 bg-[#134E4A] rotate-45 border-l border-t border-white/10" />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] pb-10" onClick={() => setActiveTooltip(null)}>
+      <header className="px-6 py-8 flex justify-between items-center bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-20">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={onBack}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </motion.button>
+        <h1 className="text-xl font-bold">Personal Loan</h1>
+        <div className="w-10" />
+      </header>
+
+      <main className="px-6 space-y-6 max-w-lg mx-auto mt-4">
+        {/* Loan Amount */}
+        <div className="space-y-2 relative">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-400 text-sm font-medium">Loan Amount</span>
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTooltip(activeTooltip === 'amount' ? null : 'amount');
+                }}
+              >
+                <Info className="w-4 h-4 text-[#D4AF37]" />
+              </motion.button>
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={onCurrencyClick}
+              className="bg-[#1A1A1A] border border-white/5 px-3 py-1.5 rounded-xl flex items-center gap-2 text-xs font-bold text-[#D4AF37]"
+            >
+              <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[10px]">
+                {currency === "USD" ? "🇺🇸" : currency === "CNY" ? "🇨🇳" : "💰"}
+              </div>
+              <span>{currency}</span>
+              <ChevronRight className="w-3 h-3" />
+            </motion.button>
+          </div>
+          <Tooltip 
+            text={tooltips.amount} 
+            isVisible={activeTooltip === 'amount'} 
+            onClose={() => setActiveTooltip(null)} 
+          />
+          <div className={`bg-[#1A1A1A] rounded-xl px-4 py-4 flex items-center justify-between border transition-all duration-300 ${errors.amount ? 'border-red-500 bg-red-500/10' : 'border-white/5 focus-within:border-[#D4AF37]'}`}>
+            <input 
+              type="text" 
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Loan Amount"
+              className="bg-transparent w-full text-lg font-bold text-white focus:outline-none placeholder:text-gray-700"
+            />
+            <span className="text-gray-600 font-bold ml-2">$</span>
+          </div>
+          {errors.amount && <ErrorMessage message={errors.amount} />}
+        </div>
+
+        {/* Interest Rate */}
+        <div className="space-y-2 relative">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm font-medium">Interest Rate</span>
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTooltip(activeTooltip === 'rate' ? null : 'rate');
+              }}
+            >
+              <Info className="w-4 h-4 text-[#D4AF37]" />
+            </motion.button>
+          </div>
+          <Tooltip 
+            text={tooltips.rate} 
+            isVisible={activeTooltip === 'rate'} 
+            onClose={() => setActiveTooltip(null)} 
+          />
+          <div className={`bg-[#1A1A1A] rounded-xl px-4 py-4 flex items-center justify-between border transition-all duration-300 ${errors.rate ? 'border-red-500 bg-red-500/10' : 'border-white/5 focus-within:border-[#D4AF37]'}`}>
+            <input 
+              type="text" 
+              value={rate}
+              onChange={(e) => setRate(e.target.value)}
+              placeholder="Interest Rate"
+              className="bg-transparent w-full text-lg font-bold text-white focus:outline-none placeholder:text-gray-700"
+            />
+            <span className="text-[#D4AF37] font-bold ml-2">%</span>
+          </div>
+          {errors.rate && <ErrorMessage message={errors.rate} />}
+        </div>
+
+        {/* Loan Term */}
+        <div className="space-y-2 relative">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm font-medium">Loan Term</span>
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTooltip(activeTooltip === 'term' ? null : 'term');
+              }}
+            >
+              <Info className="w-4 h-4 text-[#D4AF37]" />
+            </motion.button>
+          </div>
+          <Tooltip 
+            text={tooltips.term} 
+            isVisible={activeTooltip === 'term'} 
+            onClose={() => setActiveTooltip(null)} 
+          />
+          <div className="flex gap-4">
+            <div className={`flex-[2] bg-[#1A1A1A] rounded-xl px-4 py-4 border transition-all duration-300 ${errors.term ? 'border-red-500 bg-red-500/10' : 'border-white/5 focus-within:border-[#D4AF37]'}`}>
+              <input 
+                type="text" 
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+                placeholder="Loan Term"
+                className="bg-transparent w-full text-lg font-bold text-white focus:outline-none placeholder:text-gray-700"
+              />
+            </div>
+            <div className="flex-1 bg-[#1A1A1A] rounded-xl px-4 py-4 flex justify-between items-center border border-white/5 cursor-pointer">
+              <span className="text-white font-bold">Month</span>
+              <ChevronDown className="w-4 h-4 text-[#D4AF37]" />
+            </div>
+          </div>
+          {errors.term && <ErrorMessage message={errors.term} />}
+        </div>
+
+        {/* Start Date */}
+        <div className="space-y-2">
+          <span className="text-gray-400 text-sm font-medium">Start Date</span>
+          <div className="bg-[#1A1A1A] rounded-xl px-4 py-4 flex justify-between items-center border border-white/5 cursor-pointer">
+            <span className="text-white font-bold">15/04/2026</span>
+            <Calendar className="w-5 h-5 text-[#D4AF37]" />
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="grid grid-cols-2 gap-4 pt-10">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleReset}
+            className="py-4 rounded-2xl border border-white/10 text-white font-bold bg-white/5"
+          >
+            Reset Fields
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleCalculate}
+            className="py-4 rounded-2xl bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20"
+          >
+            Calculate
+          </motion.button>
+        </div>
+
+        {/* Ad Module */}
+        <div className="pt-4">
+          <AdModule />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function PersonalLoanResultPage({ currency, onBack }: { currency: string, onBack: () => void }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const loanInfo = [
+    { label: "Loan Amount", value: `666${currency}` },
+    { label: "Interest Rate", value: "8.0 %" },
+    { label: "Loan Term", value: "99 Months" },
+    { label: "Start Date", value: "2026/04/15" },
+  ];
+
+  const results = [
+    { label: "Monthly Payment", value: `9.21 ${currency}` },
+    { label: "Total Payment", value: `911.79 ${currency}` },
+    { label: "Total Interest Paid", value: `245.79 ${currency}` },
+    { label: "Pay-Off Date", value: "2034/07/15" },
+  ];
+
+  return (
+    <>
+      <AnimatePresence>
+        {showConfirm && (
+          <ConfirmationDialog 
+            onConfirm={onBack} 
+            onCancel={() => setShowConfirm(false)} 
+          />
+        )}
+      </AnimatePresence>
+
+      <header className="px-6 py-8 flex justify-between items-center bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-20">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowConfirm(true)}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </motion.button>
+        <h1 className="text-xl font-bold">Result</h1>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowConfirm(true)}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white"
+        >
+          <HomeIcon className="w-5 h-5" />
+        </motion.button>
+      </header>
+
+      <main className="px-4 pb-10 space-y-6 max-w-lg mx-auto">
+        {/* Loan Information */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-gray-400 px-1">Loan Information</h2>
+          <div className="bg-[#1A1A1A] rounded-2xl p-6 border border-white/5 shadow-xl space-y-4">
+            {loanInfo.map((info, i) => (
+              <div key={i} className="flex justify-between items-center">
+                <span className="text-gray-400 text-sm">{info.label}</span>
+                <span className="text-white font-bold">{info.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Result after calculation */}
+        <div className="space-y-4">
+          <h2 className="text-xs font-bold text-gray-500 px-1 uppercase tracking-widest">Result after calculation</h2>
+          <div className="bg-[#151515] rounded-[24px] p-8 border border-white/5 shadow-2xl space-y-6">
+            {results.map((res, i) => (
+              <div key={i} className="flex justify-between items-center">
+                <span className="text-gray-400 font-medium">{res.label}</span>
+                <span className={`${i === 0 ? 'text-[#D4AF37] font-black text-xl' : 'text-white font-bold text-lg'}`}>
+                  {res.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="pt-4">
+          <motion.button
+            whileHover={{ scale: 1.02, backgroundColor: "rgba(212,175,55,0.05)" }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full bg-[#1A1A1A] border border-[#D4AF37]/30 text-[#D4AF37] font-bold py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl"
+          >
+            <FileText className="w-6 h-6" />
+            <span className="text-lg">Share PDF</span>
+          </motion.button>
+        </div>
+
+        {/* Large Ad Module */}
+        <LargeAdModule />
       </main>
     </>
   );
@@ -457,6 +879,322 @@ function MortgageResultPage({ currency, onBack }: { currency: string, onBack: ()
         </div>
       </main>
     </>
+  );
+}
+
+function BusinessLoanFormPage({ currency, onCalculate, onBack, onCurrencyClick }: { currency: string, onCalculate: () => void, onBack: () => void, onCurrencyClick: () => void }) {
+  const [amount, setAmount] = useState("");
+  const [rate, setRate] = useState("");
+  const [term, setTerm] = useState("");
+  const [errors, setErrors] = useState<{ amount?: string; rate?: string; term?: string }>({});
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+
+  const tooltips = {
+    amount: "Please enter the total amount of the business loan you wish to borrow.",
+    rate: "Enter the annual interest rate for this business loan.",
+    term: "Please enter the loan duration (loan term) in months."
+  };
+
+  const validate = () => {
+    const newErrors: { amount?: string; rate?: string; term?: string } = {};
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      newErrors.amount = "Invalid value";
+    }
+    if (!rate || isNaN(Number(rate)) || Number(rate) <= 0) {
+      newErrors.rate = "Invalid value";
+    }
+    if (!term || isNaN(Number(term)) || Number(term) <= 0) {
+      newErrors.term = "Invalid value";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCalculate = () => {
+    if (validate()) {
+      onCalculate();
+    }
+  };
+
+  const handleReset = () => {
+    setAmount("");
+    setRate("");
+    setTerm("");
+    setErrors({});
+  };
+
+  const ErrorMessage = ({ message }: { message: string }) => (
+    <motion.div
+      initial={{ x: -10, opacity: 0 }}
+      animate={{ x: [0, -10, 10, -10, 10, 0], opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex items-center gap-1.5 mt-1.5"
+    >
+      <div className="w-1 h-1 rounded-full bg-red-500" />
+      <p className="text-red-500 text-[10px] font-bold tracking-wider uppercase">{message}</p>
+    </motion.div>
+  );
+
+  const Tooltip = ({ text, isVisible, onClose }: { text: string, isVisible: boolean, onClose: () => void }) => (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+          onClick={onClose}
+          className="bg-[#134E4A] text-white text-xs p-4 rounded-2xl shadow-2xl relative z-30 leading-relaxed border border-white/10"
+        >
+          {text}
+          <div className="absolute -top-2 left-6 w-4 h-4 bg-[#134E4A] rotate-45 border-l border-t border-white/10" />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] pb-10 relative overflow-hidden" onClick={() => setActiveTooltip(null)}>
+      {/* Background Style */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute top-[20%] left-[-20%] w-[80%] h-[80%] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+      </div>
+
+      <header className="px-6 py-8 flex justify-between items-center bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-20">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={onBack}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </motion.button>
+        <h1 className="text-xl font-bold">Business Loan</h1>
+        <div className="w-10" />
+      </header>
+
+      <main className="px-6 space-y-6 max-w-lg mx-auto mt-4 relative z-10">
+        {/* Loan Amount */}
+        <div className="space-y-2 relative">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-400 text-sm font-medium">Loan Amount</span>
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTooltip(activeTooltip === 'amount' ? null : 'amount');
+                }}
+              >
+                <Info className="w-4 h-4 text-[#D4AF37]" />
+              </motion.button>
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={onCurrencyClick}
+              className="bg-[#1A1A1A] border border-white/5 px-3 py-1.5 rounded-xl flex items-center gap-2 text-xs font-bold text-[#D4AF37]"
+            >
+              <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[10px]">
+                {currency === "USD" ? "🇺🇸" : currency === "CNY" ? "🇨🇳" : "💰"}
+              </div>
+              <span>{currency}</span>
+              <ChevronRight className="w-3 h-3" />
+            </motion.button>
+          </div>
+          <Tooltip 
+            text={tooltips.amount} 
+            isVisible={activeTooltip === 'amount'} 
+            onClose={() => setActiveTooltip(null)} 
+          />
+          <div className={`bg-[#1A1A1A] rounded-xl px-4 py-4 flex items-center justify-between border transition-all duration-300 ${errors.amount ? 'border-red-500 bg-red-500/10' : 'border-white/5 focus-within:border-[#D4AF37]'}`}>
+            <input 
+              type="text" 
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Loan Amount"
+              className="bg-transparent w-full text-lg font-bold text-white focus:outline-none placeholder:text-gray-700"
+            />
+            <span className="text-[#D4AF37] font-bold ml-2">$</span>
+          </div>
+          {errors.amount && <ErrorMessage message={errors.amount} />}
+        </div>
+
+        {/* Interest Rate */}
+        <div className="space-y-2 relative">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm font-medium">Interest Rate</span>
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTooltip(activeTooltip === 'rate' ? null : 'rate');
+              }}
+            >
+              <Info className="w-4 h-4 text-[#D4AF37]" />
+            </motion.button>
+          </div>
+          <Tooltip 
+            text={tooltips.rate} 
+            isVisible={activeTooltip === 'rate'} 
+            onClose={() => setActiveTooltip(null)} 
+          />
+          <div className={`bg-[#1A1A1A] rounded-xl px-4 py-4 flex items-center justify-between border transition-all duration-300 ${errors.rate ? 'border-red-500 bg-red-500/10' : 'border-white/5 focus-within:border-[#D4AF37]'}`}>
+            <input 
+              type="text" 
+              value={rate}
+              onChange={(e) => setRate(e.target.value)}
+              placeholder="Interest Rate"
+              className="bg-transparent w-full text-lg font-bold text-white focus:outline-none placeholder:text-gray-700"
+            />
+            <span className="text-[#D4AF37] font-bold ml-2">%</span>
+          </div>
+          {errors.rate && <ErrorMessage message={errors.rate} />}
+        </div>
+
+        {/* Loan Term */}
+        <div className="space-y-2 relative">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm font-medium">Loan Term</span>
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTooltip(activeTooltip === 'term' ? null : 'term');
+              }}
+            >
+              <Info className="w-4 h-4 text-[#D4AF37]" />
+            </motion.button>
+          </div>
+          <Tooltip 
+            text={tooltips.term} 
+            isVisible={activeTooltip === 'term'} 
+            onClose={() => setActiveTooltip(null)} 
+          />
+          <div className="flex gap-4">
+            <div className={`flex-[2] bg-[#1A1A1A] rounded-xl px-4 py-4 border transition-all duration-300 ${errors.term ? 'border-red-500 bg-red-500/10' : 'border-white/5 focus-within:border-[#D4AF37]'}`}>
+              <input 
+                type="text" 
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+                placeholder="Loan Term"
+                className="bg-transparent w-full text-lg font-bold text-white focus:outline-none placeholder:text-gray-700"
+              />
+            </div>
+            <div className="flex-1 bg-[#1A1A1A] rounded-xl px-4 py-4 flex justify-between items-center border border-white/5 cursor-pointer">
+              <span className="text-white font-bold">Month</span>
+              <ChevronDown className="w-4 h-4 text-[#D4AF37]" />
+            </div>
+          </div>
+          {errors.term && <ErrorMessage message={errors.term} />}
+        </div>
+
+        {/* Buttons */}
+        <div className="grid grid-cols-2 gap-4 pt-10">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleReset}
+            className="py-4 rounded-2xl border border-white/10 text-white font-bold bg-white/5"
+          >
+            Reset Fields
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleCalculate}
+            className="py-4 rounded-2xl bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20"
+          >
+            Calculate
+          </motion.button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function BusinessLoanResultPage({ currency, onBack }: { currency: string, onBack: () => void }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] pb-10 relative overflow-hidden">
+      {/* Background Style */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute top-[10%] right-[-10%] w-[70%] h-[70%] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[10%] left-[-10%] w-[60%] h-[60%] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+      </div>
+
+      <header className="px-6 py-8 flex justify-between items-center bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-20">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={onBack}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </motion.button>
+        <h1 className="text-xl font-bold">Result</h1>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowConfirm(true)}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white"
+        >
+          <HomeIcon className="w-5 h-5" />
+        </motion.button>
+      </header>
+
+      <main className="px-6 space-y-8 max-w-lg mx-auto mt-4 relative z-10">
+        <section className="space-y-4">
+          <h2 className="text-gray-400 text-sm font-medium">Loan Information</h2>
+          <div className="bg-[#1A1A1A] rounded-2xl p-6 space-y-4 border border-white/5 shadow-xl">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Loan Amount</span>
+              <span className="text-white font-bold">1 {currency === "USD" ? "$" : currency === "CNY" ? "¥" : currency}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Interest Rate</span>
+              <span className="text-white font-bold">1.0 %</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Loan Term</span>
+              <span className="text-white font-bold">1 Month</span>
+            </div>
+            <div className="flex justify-between items-center border-t border-white/5 pt-4">
+              <span className="text-gray-400 text-sm">Payment Frequency</span>
+              <span className="text-white font-bold">Monthly</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-gray-400 text-sm font-medium">Result after calculation</h2>
+          <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0D0D0D] rounded-2xl p-6 border border-[#D4AF37]/20 shadow-2xl shadow-[#D4AF37]/5">
+            <div className="flex justify-between items-center">
+              <span className="text-white font-medium">Monthly installment</span>
+              <span className="text-2xl font-black text-[#D4AF37]">0 {currency === "USD" ? "$" : currency === "CNY" ? "¥" : currency}</span>
+            </div>
+          </div>
+        </section>
+
+        <div className="space-y-4 pt-4">
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            className="w-full py-4 rounded-2xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 bg-white/5"
+          >
+            <FileText className="w-5 h-5" />
+            Share PDF
+          </motion.button>
+        </div>
+
+        <LargeAdModule />
+      </main>
+
+      {showConfirm && (
+        <ConfirmationDialog 
+          onCancel={() => setShowConfirm(false)} 
+          onConfirm={() => {
+            setShowConfirm(false);
+            window.location.reload();
+          }}
+        />
+      )}
+    </div>
   );
 }
 

@@ -39,7 +39,8 @@ import {
   Table,
   Info,
   Calendar,
-  ChevronDown
+  ChevronDown,
+  X
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
@@ -153,9 +154,20 @@ const currencies: Currency[] = [
   { code: "IDR", name: "Indonesian Rupiah", flag: "🇮🇩" },
 ];
 
+const LANGUAGES = [
+  { id: 'en', name: 'English', flag: '🇬🇧' },
+  { id: 'zh-hk', name: '中文（繁體）', flag: '🇨🇳' },
+  { id: 'hi', name: 'हिंदी भाषा', flag: '🇮🇳' },
+  { id: 'zh-cn', name: '中文（简体）', flag: '🇨🇳' },
+  { id: 'es', name: 'Español', flag: '🇪🇸' },
+  { id: 'pt-br', name: 'Português (Brasil)', flag: '🇧🇷' },
+  { id: 'pt-pt', name: 'Português (Portugal)', flag: '🇵🇹' },
+];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("Home");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#D4AF37] selection:text-black pb-32 relative overflow-hidden">
@@ -304,7 +316,26 @@ export default function App() {
             transition={{ duration: 0.3 }}
             className="relative z-10"
           >
-            <SettingsPage onLanguageClick={() => setActiveTab("Currency")} />
+            <SettingsPage onLanguageClick={() => setActiveTab("Language")} />
+          </motion.div>
+        )}
+        {activeTab === "Language" && (
+          <motion.div
+            key="language"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10"
+          >
+            <LanguageSelectionPage 
+              selectedLanguage={selectedLanguage}
+              onSelect={(id) => {
+                setSelectedLanguage(id);
+                setActiveTab("Setting");
+              }}
+              onBack={() => setActiveTab("Setting")}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -1311,16 +1342,246 @@ function CurrencySelectionPage({ selectedCurrency, onSelect, onBack }: { selecte
   );
 }
 
+function RatingModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+  const [rating, setRating] = useState(5);
+
+  const getEmoji = (r: number) => {
+    switch (r) {
+      case 1: return "😠";
+      case 2: return "😐";
+      case 3: return "🙂";
+      case 4: return "😊";
+      case 5: return "😍";
+      default: return "😍";
+    }
+  };
+
+  const getMessage = (r: number) => {
+    switch (r) {
+      case 1: return "We're sorry to hear that.";
+      case 2: return "We'll try to do better.";
+      case 3: return "Thanks for your feedback!";
+      case 4: return "Glad you like it!";
+      case 5: return "We love you too!";
+      default: return "We love you too!";
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/60 z-[100] backdrop-blur-sm"
+          />
+          {/* Modal Container */}
+          <div className="fixed inset-0 flex items-end justify-center z-[101] pointer-events-none">
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="w-full max-w-md bg-[#222222] rounded-t-[40px] p-8 pb-12 pointer-events-auto shadow-[0_-10px_40px_rgba(0,0,0,0.5)] relative"
+            >
+              <button 
+                onClick={onClose}
+                className="absolute top-6 right-6 p-2 rounded-full bg-white/5 text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex flex-col items-center text-center space-y-6">
+                <motion.div 
+                  key={rating}
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-7xl"
+                >
+                  {getEmoji(rating)}
+                </motion.div>
+                
+                <h2 className="text-2xl font-bold text-white">
+                  {getMessage(rating)}
+                </h2>
+
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <motion.button
+                      key={star}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setRating(star)}
+                      className="p-1"
+                    >
+                      <Star 
+                        className={`w-10 h-10 ${star <= rating ? "fill-[#F5A623] text-[#F5A623]" : "text-gray-600"}`} 
+                      />
+                    </motion.button>
+                  ))}
+                </div>
+
+                <div className="w-full pt-4 space-y-4">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onClose}
+                    className="w-full bg-[#6B8E23] hover:bg-[#556B2F] text-white font-bold py-4 rounded-2xl shadow-lg transition-colors"
+                  >
+                    Rate
+                  </motion.button>
+                  
+                  <button 
+                    onClick={onClose}
+                    className="text-[#7ED321] font-bold text-sm hover:underline"
+                  >
+                    Exit
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function BottomAdModule() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-[#1A1A1A] border-t border-white/10 p-4 space-y-3 w-full max-w-lg mx-auto"
+    >
+      <div className="flex flex-col gap-3">
+        <motion.button
+          whileHover={{ scale: 1.02, backgroundColor: "#E5C048" }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full bg-[#D4AF37] text-black font-bold py-3 rounded-xl shadow-lg text-sm transition-colors"
+        >
+          了解详情
+        </motion.button>
+        
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#2A2A2A] flex-shrink-0 overflow-hidden border border-white/5">
+            <img 
+              src="https://picsum.photos/seed/vpn-icon/100/100" 
+              alt="App Icon" 
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="bg-[#4CAF50] text-white text-[8px] px-1 rounded font-bold">Ad</span>
+              <h3 className="text-sm font-bold text-white">多条线路 稳定高速 一键安全连接</h3>
+            </div>
+            <p className="text-[10px] text-gray-400 leading-relaxed">
+              极速安全稳定互联，4K超清流畅播放，一键开启丝滑体验
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-xl overflow-hidden aspect-video relative border border-white/5">
+          <img 
+            src="https://picsum.photos/seed/vpn-ad/600/337" 
+            alt="Ad Banner" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/40 backdrop-blur-sm p-1.5 rounded-lg border border-white/10">
+            <div className="flex gap-2">
+              <button className="text-white/80 hover:text-white"><RefreshCw className="w-3 h-3" /></button>
+              <button className="text-white/80 hover:text-white"><X className="w-3 h-3" /></button>
+            </div>
+          </div>
+          <div className="absolute bottom-1 right-1 text-[6px] text-white/30">谷歌广告</div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function LanguageSelectionPage({ selectedLanguage, onSelect, onBack }: { selectedLanguage: string, onSelect: (id: string) => void, onBack: () => void }) {
+  const [tempSelected, setTempSelected] = useState(selectedLanguage);
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] pb-64 relative overflow-hidden flex flex-col">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-[#7ED321]/10 rounded-full blur-[100px] -mr-32 -mt-32" />
+      
+      <header className="px-6 py-8 flex justify-between items-center bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-20">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={onBack}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </motion.button>
+        <div className="text-center">
+          <h1 className="text-xl font-bold">Language</h1>
+          <p className="text-[10px] text-gray-500 mt-1">Please select app's language to continue</p>
+        </div>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onSelect(tempSelected)}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-[#7ED321]/20 text-[#7ED321]"
+        >
+          <Check className="w-6 h-6" />
+        </motion.button>
+      </header>
+
+      <main className="px-6 space-y-3 max-w-lg mx-auto mt-6 flex-1 overflow-y-auto">
+        {LANGUAGES.map((lang) => (
+          <motion.button
+            key={lang.id}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setTempSelected(lang.id)}
+            className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
+              tempSelected === lang.id 
+                ? "bg-[#6B8E23] border-[#7ED321] shadow-lg shadow-[#7ED321]/10" 
+                : "bg-[#1A1A1A] border-white/5"
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-2xl">{lang.flag}</span>
+              <span className={`text-lg font-bold ${tempSelected === lang.id ? "text-white" : "text-gray-300"}`}>
+                {lang.name}
+              </span>
+            </div>
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+              tempSelected === lang.id ? "border-white bg-white" : "border-gray-600"
+            }`}>
+              {tempSelected === lang.id && <div className="w-2.5 h-2.5 rounded-full bg-[#6B8E23]" />}
+            </div>
+          </motion.button>
+        ))}
+      </main>
+
+      {/* Fixed Ad at Bottom */}
+      <div className="fixed bottom-0 left-0 w-full z-30">
+        <BottomAdModule />
+      </div>
+    </div>
+  );
+}
+
 function SettingsPage({ onLanguageClick }: { onLanguageClick: () => void }) {
+  const [isRatingOpen, setIsRatingOpen] = useState(false);
+
   const settingsItems = [
     { icon: Languages, label: "Language", onClick: onLanguageClick, hasChevron: true, color: "#7ED321" },
-    { icon: Star, label: "Rate Us", color: "#F5A623" },
+    { icon: Star, label: "Rate Us", onClick: () => setIsRatingOpen(true), color: "#F5A623" },
     { icon: ShieldCheck, label: "Privacy Policy", color: "#4A90E2" },
     { icon: Share2, label: "Share", color: "#BD10E0" },
   ];
 
   return (
     <div className="px-6 py-12 space-y-6">
+      <RatingModal isOpen={isRatingOpen} onClose={() => setIsRatingOpen(false)} />
       <h1 className="text-3xl font-black text-center text-white mb-8">Setting</h1>
 
       {/* Independent Ad Module */}
